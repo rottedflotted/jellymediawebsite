@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jelly Media Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Lettera+Mono+LL&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f5f4f0;
+      --grey: #888;
+      --light-grey: #ddd;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: 'DM Mono', monospace;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      padding: 3rem 3rem 2rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--black);
+    }
+
+    .site-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .site-subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--grey);
+    }
+
+    /* Gallery */
+    main {
+      flex: 1;
+      padding: 2.5rem 3rem;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(100%);
+      transition: transform var(--transition), filter var(--transition);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.04);
+      filter: grayscale(80%);
+    }
+
+    .gallery-item .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,10,10,0);
+      transition: background var(--transition);
+      display: flex;
+      align-items: flex-end;
+      padding: 1rem;
+    }
+
+    .gallery-item:hover .overlay {
+      background: rgba(10,10,10,0.18);
+    }
+
+    .gallery-item .caption {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity var(--transition), transform var(--transition);
+    }
+
+    .gallery-item:hover .caption {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.96);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .lightbox.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lightbox-inner {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      filter: grayscale(100%);
+      transform: scale(0.96);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: block;
+    }
+
+    .lightbox.active img {
+      transform: scale(1);
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 2rem;
+      right: 2.5rem;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .lightbox-close:hover { opacity: 1; }
+
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--white);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 300;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+      padding: 1rem;
+      line-height: 1;
+    }
+
+    .lightbox-nav:hover { opacity: 1; }
+    .lightbox-nav.prev { left: 1.5rem; }
+    .lightbox-nav.next { right: 1.5rem; }
+
+    .lightbox-counter {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: rgba(245,244,240,0.4);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--black);
+      padding: 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.02em;
+    }
+
+    .footer-contact {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-contact a {
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--black);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .footer-contact a:hover {
+      border-bottom-color: var(--black);
+    }
+
+    .footer-right {
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      color: var(--grey);
+      text-transform: uppercase;
+    }
+
+    /* Fade-in animation on load */
+    .gallery-item {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.6s forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger delays */
+    .gallery-item:nth-child(1)  { animation-delay: 0.05s; }
+    .gallery-item:nth-child(2)  { animation-delay: 0.12s; }
+    .gallery-item:nth-child(3)  { animation-delay: 0.19s; }
+    .gallery-item:nth-child(4)  { animation-delay: 0.26s; }
+    .gallery-item:nth-child(5)  { animation-delay: 0.33s; }
+    .gallery-item:nth-child(6)  { animation-delay: 0.40s; }
+    .gallery-item:nth-child(7)  { animation-delay: 0.47s; }
+    .gallery-item:nth-child(8)  { animation-delay: 0.54s; }
+    .gallery-item:nth-child(9)  { animation-delay: 0.61s; }
+    .gallery-item:nth-child(n+10) { animation-delay: 0.68s; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      header { padding: 2rem 1.25rem 1.5rem; flex-direction: column; gap: 0.5rem; }
+      main { padding: 1.5rem 1.25rem; }
+      .gallery { gap: 3px; }
+      footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .lightbox-nav { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1 class="site-title">Jacob Lee</h1>
+    <span class="site-subtitle">Photograper</span>
+  </header>
+
+  <!-- Gallery -->
+  <main>
+    <div class="gallery" id="gallery">
+      <!-- 
+        HOW TO ADD YOUR PHOTOS:
+        Replace the src attributes below with your own image paths.
+        Add or remove <div class="gallery-item"> blocks as needed.
+        The data-full attribute can point to a higher-resolution version.
+        The data-caption attribute sets the hover label.
+      -->
+
+      <div class="gallery-item" onclick="openLightbox(0)">
+        <img src="images/small-1.jpg" 
+             data-full="images/1.jpg"
+             data-caption="1" alt="1" loading="lazy" />
+        <div class="overlay"><span class="caption">1</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(1)">
+        <img src="images/small-2.jpg"
+             data-full="images/2.jpg"
+             data-caption="2" alt="2" loading="lazy" />
+        <div class="overlay"><span class="caption">2</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(2)">
+        <img src="images/small-3.jpg"
+             data-full="images/3.jpg"
+             data-caption="3" alt="3" loading="lazy" />
+        <div class="overlay"><span class="caption">3</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(3)">
+        <img src="images/small-4.jpg"
+             data-full="images/4.jpg"
+             data-caption="4" alt="4" loading="lazy" />
+        <div class="overlay"><span class="caption">4</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(4)">
+        <img src="images/small-5.jpg"
+             data-full="images/5.jpg"
+             data-caption="5" alt="5" loading="lazy" />
+        <div class="overlay"><span class="caption">5</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(5)">
+        <img src="images/small-6.jpg"
+             data-full="images/6.jpg"
+             data-caption="6" alt="6" loading="lazy" />
+        <div class="overlay"><span class="caption">6</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(6)">
+        <img src="images/small-7.jpg"
+             data-full="images/7.jpg"
+             data-caption="7" alt="7" loading="lazy" />
+        <div class="overlay"><span class="caption">7</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(7)">
+        <img src="images/small-8.jpg"
+             data-full="images/8.jpg"
+             data-caption="8" alt="8" loading="lazy" />
+        <div class="overlay"><span class="caption">8</span></div>
+      </div>
+
+      <div class="gallery-item" onclick="openLightbox(8)">
+        <img src="images/small-9.jpg"
+             data-full="images/9.jpg"
+             data-caption="9" alt="9" loading="lazy" />
+        <div class="overlay"><span class="caption">9</span></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="handleLightboxClick(event)">
+    <div class="lightbox-inner">
+      <img src="" alt="" id="lightbox-img" />
+    </div>
+    <button class="lightbox-close" onclick="closeLightbox()">Close ✕</button>
+    <button class="lightbox-nav prev" onclick="navigate(-1)">&#8592;</button>
+    <button class="lightbox-nav next" onclick="navigate(1)">&#8594;</button>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-name">Jelly Media</div>
+    <div class="footer-contact">
+      <a href="mailto:jacobjelee@gmail.com">jacobjelee@gmail.com</a>
+      <a href="https://www.instagram.com/jacobjelllyy/" target="_blank" rel="noopener">Instagram</a>
+    </div>
+    <div class="footer-right">&copy; 2026</div>
+  </footer>
+
+  <script>
+    // ── Lightbox ───────────────────────────────────────────────
+    const items = Array.from(document.querySelectorAll('.gallery-item img'));
+    let current = 0;
+
+    function openLightbox(index) {
+      current = index;
+      showImage();
+      document.getElementById('lightbox').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function showImage() {
+      const img   = items[current];
+      const lb    = document.getElementById('lightbox-img');
+      lb.src      = img.dataset.full || img.src;
+      lb.alt      = img.alt;
+      document.getElementById('lightbox-counter').textContent =
+        (current + 1) + ' / ' + items.length;
+    }
+
+    function navigate(dir) {
+      current = (current + dir + items.length) % items.length;
+      const lb = document.getElementById('lightbox-img');
+      lb.style.opacity = '0';
+      setTimeout(() => { showImage(); lb.style.opacity = '1'; }, 150);
+    }
+
+    function handleLightboxClick(e) {
+      if (e.target === document.getElementById('lightbox')) closeLightbox();
+    }
+
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+      const lb = document.getElementById('lightbox');
+      if (!lb.classList.contains('active')) return;
+      if (e.key === 'Escape')       closeLightbox();
+      if (e.key === 'ArrowRight')   navigate(1);
+      if (e.key === 'ArrowLeft')    navigate(-1);
+    });
+
+    // Smooth opacity transition on image swap
+    const lbImg = document.getElementById('lightbox-img');
+    lbImg.style.transition = 'opacity 0.15s ease, transform 0.4s cubic-bezier(0.4,0,0.2,1)';
+  </script>
+</body>
+</html>
